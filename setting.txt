@@ -1,0 +1,3 @@
+crawler_name=上市類股		#輸入name.txt名字，並用','隔開，如crawler_name=上市類股, 上櫃類股
+worker_num=10			#執行數量，數字越高跑越快，但電腦負擔會越高。同時該數字越高不一定越快。
+percentage_thrshold=10.0	#漲多少百分比時，顯示該公司當前股價資訊
