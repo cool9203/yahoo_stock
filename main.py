@@ -174,7 +174,7 @@ input:
 output:
     null
 說明:
-    功能-顯示漲幅達一定水準的股票資料。
+    功能-顯示漲幅或跌幅達一定水準的股票資料。透過setting["_percentage_thrshold"]控制水準。
     利用get_page_stock功能實現。
 """
 def get_stop(stock_data, setting):
@@ -186,9 +186,9 @@ def get_stop(stock_data, setting):
             yesteday = float(data["昨收"])
             percentage = ((now - yesteday) / yesteday) * 100
             if (percentage > up_percentage_thrshold):
-                print(f"(漲幅通知){name}, 股價:{data['股價']}, 昨收:{data['昨收']}, 漲幅:{round(percentage, 5)}")
+                print(f"(漲幅通知){name}, 當前股價:{data['股價']}, 昨收:{data['昨收']}, 漲幅:{round(percentage, 5)}")
             elif (percentage < down_percentage_thrshold):
-                print(f"(跌幅通知){name}, 股價:{data['股價']}, 昨收:{data['昨收']}, 跌幅:{round(percentage, 5)}")
+                print(f"(跌幅通知){name}, 當前股價:{data['股價']}, 昨收:{data['昨收']}, 跌幅:{round(percentage, 5)}")
         except:
             #print(name, "error")   #會有資料的股價、昨收是空值，所以需要這樣try、except
             pass
@@ -224,8 +224,9 @@ def main():
     url_list = list()
     for get_name in setting["crawler_name"]:
         for name, url in stock_url_dict[get_name].items():
-            url = urllib.parse.urljoin(host, url)
-            url_list.append(url)
+            if (not name in setting["not_crawler_name"]):
+                url = urllib.parse.urljoin(host, url)
+                url_list.append(url)
 
 
     #"""
