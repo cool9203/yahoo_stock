@@ -166,29 +166,46 @@ def get_stock_row_data(row):
     return row_data
 
 
+
 """
 input:
-    string url
+    dict stock_data
+    dict setting
 output:
     null
 說明:
     功能-顯示漲幅達一定水準的股票資料。
     利用get_page_stock功能實現。
 """
-def get_up_stop(url):
-    setting = load_setting("./", "setting.txt")
-    percentage_thrshold = float(setting["percentage_thrshold"][0])
-    stock_data = get_page_stock(url)
+def get_stop(stock_data, setting):
+    up_percentage_thrshold = float(setting["up_percentage_thrshold"][0])
+    down_percentage_thrshold = float(setting["down_percentage_thrshold"][0]) * (-1)
     for name, data in stock_data.items():
         try:
             now = float(data["股價"])
             yesteday = float(data["昨收"])
-            percentage = ((yesteday - now) / yesteday) * 100
-            if (percentage > percentage_thrshold):
-                print(f"{name}, 股價:{data['股價']}, 昨收:{data['昨收']}, 漲幅:{round(percentage, 5)}")
+            percentage = ((now - yesteday) / yesteday) * 100
+            if (percentage > up_percentage_thrshold):
+                print(f"(漲幅通知){name}, 股價:{data['股價']}, 昨收:{data['昨收']}, 漲幅:{round(percentage, 5)}")
+            elif (percentage < down_percentage_thrshold):
+                print(f"(跌幅通知){name}, 股價:{data['股價']}, 昨收:{data['昨收']}, 跌幅:{round(percentage, 5)}")
         except:
             #print(name, "error")   #會有資料的股價、昨收是空值，所以需要這樣try、except
             pass
+
+
+"""
+input:
+    string url
+output:
+    null
+說明:
+    集結執行功能
+"""
+def run(url):
+    stock_data = get_page_stock(url)
+    setting = load_setting("./", "setting.txt")
+    get_stop(stock_data, setting)
 
 
 @spend_time
@@ -214,7 +231,7 @@ def main():
     #"""
     #利用processes poll加快執行速度。
     with Pool(processes=WORKER_NUM) as pool:
-        pool.map(get_up_stop, url_list)
+        pool.map(run, url_list)
     #"""
     
 
