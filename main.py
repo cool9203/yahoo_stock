@@ -109,13 +109,14 @@ def get_page_stock(url):
 
     #get all row data
     paragraph = soup.find("div", class_="table-body-wrapper")
-    rows = paragraph.find_all("div", class_="table-row")    #取得所有股的row集合
-    for row in rows:
-        data = get_stock_row_data(row)  #取得一個股裡對應資料，如當前股價等
-        head_value = dict()
-        for i in range(1, len(header)):
-            head_value[header[i]] = data[i]
-        stock_data[data[0]] = head_value
+    if (not paragraph is None):
+        rows = paragraph.find_all("div", class_="table-row")    #取得所有股的row集合
+        for row in rows:
+            data = get_stock_row_data(row)  #取得一個股裡對應資料，如當前股價等
+            head_value = dict()
+            for i in range(1, len(header)):
+                head_value[header[i]] = data[i]
+            stock_data[data[0]] = head_value
     return stock_data
 
 
@@ -166,29 +167,46 @@ def get_stock_row_data(row):
     return row_data
 
 
+
+"""
+input:
+    dict stock_data
+    dict setting
+output:
+    null
+說明:
+    功能-顯示漲幅或跌幅達一定水準的股票資料。透過setting["_percentage_thrshold"]控制水準。
+    利用get_page_stock功能實現。
+"""
+def get_stop(stock_data, setting):
+    up_percentage_thrshold = float(setting["up_percentage_thrshold"][0])
+    down_percentage_thrshold = float(setting["down_percentage_thrshold"][0]) * (-1)
+    for name, data in stock_data.items():
+        try:
+            now = float(data["股價"])
+            yesteday = float(data["昨收"])
+            percentage = ((now - yesteday) / yesteday) * 100
+            if (percentage > up_percentage_thrshold):
+                print(f"(漲幅通知){name}, 當前股價:{data['股價']}, 昨收:{data['昨收']}, 漲幅:{round(percentage, 5)}")
+            elif (percentage < down_percentage_thrshold):
+                print(f"(跌幅通知){name}, 當前股價:{data['股價']}, 昨收:{data['昨收']}, 跌幅:{round(percentage, 5)}")
+        except:
+            #print(name, "error")   #會有資料的股價、昨收是空值，所以需要這樣try、except
+            pass
+
+
 """
 input:
     string url
 output:
     null
 說明:
-    功能-顯示漲幅達一定水準的股票資料。
-    利用get_page_stock功能實現。
+    集結執行功能
 """
-def get_up_stop(url):
-    setting = load_setting("./", "setting.txt")
-    percentage_thrshold = float(setting["percentage_thrshold"][0])
+def run(url):
     stock_data = get_page_stock(url)
-    for name, data in stock_data.items():
-        try:
-            now = float(data["股價"])
-            yesteday = float(data["昨收"])
-            percentage = ((yesteday - now) / yesteday) * 100
-            if (percentage > percentage_thrshold):
-                print(f"{name}, 股價:{data['股價']}, 昨收:{data['昨收']}, 漲幅:{round(percentage, 5)}")
-        except:
-            #print(name, "error")   #會有資料的股價、昨收是空值，所以需要這樣try、except
-            pass
+    setting = load_setting("./", "setting.txt")
+    get_stop(stock_data, setting)
 
 
 @spend_time
@@ -207,14 +225,15 @@ def main():
     url_list = list()
     for get_name in setting["crawler_name"]:
         for name, url in stock_url_dict[get_name].items():
-            url = urllib.parse.urljoin(host, url)
-            url_list.append(url)
+            if (not name in setting["not_crawler_name"]):
+                url = urllib.parse.urljoin(host, url)
+                url_list.append(url)
 
 
     #"""
     #利用processes poll加快執行速度。
     with Pool(processes=WORKER_NUM) as pool:
-        pool.map(get_up_stop, url_list)
+        pool.map(run, url_list)
     #"""
     
 

@@ -1,3 +1,5 @@
-crawler_name=上市類股		#輸入name.txt名字，並用','隔開，如crawler_name=上市類股, 上櫃類股
-worker_num=10			#執行數量，數字越高跑越快，但電腦負擔會越高。同時該數字越高不一定越快。
-percentage_thrshold=10.0	#漲多少百分比時，顯示該公司當前股價資訊
+crawler_name=上市類股, 上櫃類股	#(建議不要修改該行) 輸入name.txt名字，並用','隔開，如crawler_name=上市類股, 上櫃類股
+worker_num=10			#執行數量，數字越高跑越快，但電腦負擔會越高。同時該數字越高不一定越快，需取得平衡才會有最快的速度。
+up_percentage_thrshold=5.0	#漲多少百分比時，顯示該公司當前股價資訊
+down_percentage_thrshold=99.0	#跌多少百分比時，顯示該公司當前股價資訊
+not_crawler_name=市認購,市認售,指數類,市牛證,市熊證,櫃認購,櫃認售,櫃指數類,櫃牛證,櫃熊證,櫃憑證	#不爬的類別
